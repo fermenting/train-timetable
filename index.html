@@ -30,6 +30,7 @@
     <input type="text" id="destination">
     <input type="time" id="first-time-24">
     <input type="number" id="frequency-minutes">
+    <button id="submit">Submit</button>
   </form>
 </div>
 
@@ -51,12 +52,80 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
   <script>
-//js goes here
+//make our lives easier when grabbing info from the fb db
+var database = firebase.database();
+
+//tough actin' click action
+$("#submit").on("click", function(event) {
+  //no refresh here
+  event.preventDefault();
+
+//collect that precious input
+var trainName = $("#train-name").val().trim();
+var destination = $("#destination").val().trim();
+var firstTime = $("#first-time-24").val().trim();
+var frequencyMinutes = $("#frequency-minutes").val().trim();
+
+//Collect the input into one object
+var trainSchedule = {
+name: trainName,
+destination: destination,
+firstTime: firstTime,
+frequency: frequencyMinutes,
+}
+
+//get that data into firebase
+database.ref().push(trainSchedule)
+
+//clear out those input boxes
+$("#train-name").val("");
+$("#destination").val("");
+$("#first-time-24").val("");
+$("#frequency-minutes").val("")
+
+//end of click event and push to firebase
+});
+
+
+//whenever a train is added to firebase, we need to update the client side train timetable
+
+database.ref().on("child_added", function (childSnapshot){
+
+  //pull all the keys into fresh variables
+  var  kidName = childSnapshot.val().name;
+  var  kidDestination = childSnapshot.val().destination;
+  var  kidTime = childSnapshot.val().firstTime;
+  var  kidFrequency = childSnapshot.val().frequency;
+
 
 //next train arrives at [time] (relative to current time)
+//both times in 24hr format 
+
+//we need the next arrival to be 
+
+
+//minutesAway = nextArrival - current time
+var nextArrival;
+var minutesAway;
+
+
+//create a new row with all the datums
+var newRow = $("<tr>").append(
+    $("<td>").text(kidName),
+    $("<td>").text(kidDestination),
+    $("<td>").text(kidTime),
+    $("<td>").text(KidFrequency),
+    $("<td>").text(nextArrival),
+    $("<td>").text(minutesAway)
+);
+
+//end of childadded function
+})
+
 
 
   </script>
+
 
 
 
