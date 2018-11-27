@@ -101,7 +101,18 @@ database.ref().on("child_added", function (childSnapshot){
 //next train arrives at [time] (relative to current time)
 //both times in 24hr format 
 
-//we need the next arrival to be 
+//we need the next arrival to time to be the next occurance of the train's arrival, based on the initial time and frequency. There are many ways to pet this cat.
+
+//convert both times into 'absolute time' for a day, in minutes, i.e. 11:59PM = minute 1439 out of 1440.
+
+//first thought: subtract the 'firsttime' from the current time, and compare the result to the interval.
+// if result is negative, ('while'?), add the interval to the result until we get a positive result. the first positive result is the minutes until the next arrival.
+
+//if the result is positive, compare it's value to the interval. if it is bigger than the interval, subtract the interval from the result until the result is less than the interval, but still positive. the final result is the minutes until the next arrival.
+
+//special cases: when current time is late in day, and next arrival time is early in day. this may break the logic
+//special cases: large frequencies?
+
 
 
 //minutesAway = nextArrival - current time
