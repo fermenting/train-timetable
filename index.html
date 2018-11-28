@@ -8,8 +8,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Bootstrap CDN-->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script> -->
+
+  <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
 
   <style>
     /* CSS goes here */
@@ -18,23 +22,40 @@
 
 <body>
 
-<nav>
-  TRAIN TIME
-</nav>
+  <nav>
+    TRAIN TIME - Time for Trains
+  </nav>
 
-<div id="train-table"></div>
+  <div id="train-table">
+    <tr>
+      <th>Train Name</th>
+      <th>Destination</th>
+      <th>Next Arrival</th>
+      <th>Frequency</th>
+      <th>Minutes Away</th>
+    </tr>
+  </div>
+  <div>
+    <form>
+      <label for="train-name">Name That Train!</label><br>
+      <input type="text" id="train-name">
+      <br>
+      <label for="destination">Destination</label><br>
+      <input type="text" id="destination">
+      <br>
+      <div id="arrival-time-div">
+      </div>
+      <label for="first-time-24">Arrival Time</label><br>
+      <input type="number" id="first-time-24" min="0" max="2400">
+      <br>
+      <label for="frequency-minutes">Frequency</label><br>
+      <input type="number" id="frequency-minutes"min="0">
+      <br>
+      <button id="submit">Submit</button>
+    </form>
+  </div>
 
-<div>
-  <form>
-    <input type="text" id="train-name">
-    <input type="text" id="destination">
-    <input type="time" id="first-time-24">
-    <input type="number" id="frequency-minutes">
-    <button id="submit">Submit</button>
-  </form>
-</div>
 
-  <script src="https://www.gstatic.com/firebasejs/5.5.9/firebase.js"></script>
   <script>
     // Initialize Firebase
     var config = {
@@ -52,86 +73,120 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
   <script>
-//make our lives easier when grabbing info from the fb db
-var database = firebase.database();
+    var hourSelect = $("<select name='hourSelect'>")
+      for (var i=0; i<24; i++){
+        hourSelect.append("<option value='" + [i] + "'>" + [i]+ "</option>")
+      }
+      $("#arrival-time-div").append("<label>Hours(24)</label>")
+      $("#arrival-time-div").append(hourSelect)
 
-//tough actin' click action
-$("#submit").on("click", function(event) {
-  //no refresh here
-  event.preventDefault();
-
-//collect that precious input
-var trainName = $("#train-name").val().trim();
-var destination = $("#destination").val().trim();
-var firstTime = $("#first-time-24").val().trim();
-var frequencyMinutes = $("#frequency-minutes").val().trim();
-
-//Collect the input into one object
-var trainSchedule = {
-name: trainName,
-destination: destination,
-firstTime: firstTime,
-frequency: frequencyMinutes,
-}
-
-//get that data into firebase
-database.ref().push(trainSchedule)
-
-//clear out those input boxes
-$("#train-name").val("");
-$("#destination").val("");
-$("#first-time-24").val("");
-$("#frequency-minutes").val("")
-
-//end of click event and push to firebase
-});
+      var minuteSelect = $("<select name='minuteSelect'>")
+          for (var i=0; i<59; i++){
+        minuteSelect.append("<option value='" + [i] + "'>" + [i]+ "</option>")
+      }
+      $("#arrival-time-div").append("<label>Minutes</label>");
+      $("#arrival-time-div").append(minuteSelect)
 
 
-//whenever a train is added to firebase, we need to update the client side train timetable
+    //make our lives easier when grabbing info from the fb db
+    var database = firebase.database();
 
-database.ref().on("child_added", function (childSnapshot){
+    //tough actin' click action
+    $("#submit").on("click", function (event) {
+      //no refresh here
+      event.preventDefault();
 
-  //pull all the keys into fresh variables
-  var  kidName = childSnapshot.val().name;
-  var  kidDestination = childSnapshot.val().destination;
-  var  kidTime = childSnapshot.val().firstTime;
-  var  kidFrequency = childSnapshot.val().frequency;
+      //collect that precious input
+      var trainName = $("#train-name").val().trim();
+      var destination = $("#destination").val().trim();
+      var firstTime = $("#first-time-24").val().trim();
+      var frequencyMinutes = $("#frequency-minutes").val().trim();
+
+      //Collect the input into one object
+      var trainSchedule = {
+        name: trainName,
+        destination: destination,
+        firstTime: firstTime,
+        frequency: frequencyMinutes,
+      }
+
+      //get that data into firebase
+      database.ref().push(trainSchedule)
+
+      //clear out those input boxes
+      $("#train-name").val("");
+      $("#destination").val("");
+      $("#first-time-24").val("");
+      $("#frequency-minutes").val("")
+
+      //end of click event and push to firebase
+    });
 
 
-//next train arrives at [time] (relative to current time)
-//both times in 24hr format 
+    //whenever a train is added to firebase, we need to update the client side train timetable
 
-//we need the next arrival to time to be the next occurance of the train's arrival, based on the initial time and frequency. There are many ways to pet this cat.
+    database.ref().on("child_added", function (childSnapshot) {
 
-//convert both times into 'absolute time' for a day, in minutes, i.e. 11:59PM = minute 1439 out of 1440.
+      //pull all the keys into fresh variables
+      var kidName = childSnapshot.val().name;
+      var kidDestination = childSnapshot.val().destination;
+      var kidTime = childSnapshot.val().firstTime;
+      var kidFrequency = childSnapshot.val().frequency;
 
-//first thought: subtract the 'firsttime' from the current time, and compare the result to the interval.
-// if result is negative, ('while'?), add the interval to the result until we get a positive result. the first positive result is the minutes until the next arrival.
+      // console.log(kidName);
+      // console.log(kidDestination);
+      // console.log(kidTime)
+      // console.log(kidFrequency)
 
-//if the result is positive, compare it's value to the interval. if it is bigger than the interval, subtract the interval from the result until the result is less than the interval, but still positive. the final result is the minutes until the next arrival.
+      //next train arrives at [time] (relative to current time)
+      //both times in 24hr format 
 
-//special cases: when current time is late in day, and next arrival time is early in day. this may break the logic
-//special cases: large frequencies?
+      //we need the next arrival to time to be the next occurance of the train's arrival, based on the initial time and frequency. There are many ways to pet this cat.
 
-
-
-//minutesAway = nextArrival - current time
-var nextArrival;
-var minutesAway;
+      //convert both times into 'absolute time' for a day, in minutes, i.e. 11:59PM = minute 1439 out of 1440.
+      console.log(kidTime)
 
 
-//create a new row with all the datums
-var newRow = $("<tr>").append(
-    $("<td>").text(kidName),
-    $("<td>").text(kidDestination),
-    $("<td>").text(kidTime),
-    $("<td>").text(KidFrequency),
-    $("<td>").text(nextArrival),
-    $("<td>").text(minutesAway)
-);
 
-//end of childadded function
-})
+      //first thought: subtract the 'firsttime' from the current time, and compare the result to the interval.
+      // var timeDiff = momentKidTime.subtract(moment())
+
+      
+      // console.log(moment())
+      // console.log(moment(kidTime, "minutes"))
+      // console.log(timeDiff)
+
+      // if result is negative, ('while'?), add the interval to the result until we get a positive result. the first positive result is the minutes until the next arrival.
+      // while (Math.sign(timeDiff) === false) {
+      //   timeDiff += kidFrequency
+      // };
+
+      //if the result is positive, compare it's value to the interval. if it is bigger than the interval, subtract the interval from the result until the result is less than the interval, but still positive. the final result is the minutes until the next arrival.
+      // while (timeDiff > kidFrequency) {
+      //   timeDiff -= kidFrequency
+      // }
+
+      //special cases: when current time is late in day, and next arrival time is early in day. this may break the logic
+      //special cases: large frequencies?
+
+
+      //minutesAway = nextArrival - current time
+      // var nextArrival = moment().add(timeDiff, "m").formt("LT");
+      // var minutesAway = frequency - timeDiff
+
+      //create a new row with all the datums
+      var newRow = $("<tr>").append(
+        $("<td>").text(kidName),
+        $("<td>").text(kidDestination),
+        // $("<td>").text(nextArrival),
+        $("<td>").text(kidFrequency),
+        // $("<td>").text(minutesAway)
+      );
+
+      $("#train-table").append(newRow);
+
+      //end of childadded function
+    })
 
 
 
@@ -144,3 +199,12 @@ var newRow = $("<tr>").append(
 </body>
 
 </html>
+<!-- 
+var a = new Date('01/12/2016'); //December 1 2016 in DD/MM/YYYY format
+// //"Tue Jan 12 2016 00:00:00 GMT-0600 (Central Standard Time)"
+
+// moment('01/12/2016', 'DD/MM/YYYY', true).format()
+// "2016-12-01T00:00:00-06:00"
+
+// moment().add(3, 'hours');
+ -->
