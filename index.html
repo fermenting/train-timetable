@@ -4,65 +4,111 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>When Will My Train Come?</title>
+  <title>When Will My Train Arrive?</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Bootstrap CDN-->
-  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script> -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+  <link href="https://fonts.googleapis.com/css?family=Monda:700|Nunito|Ubuntu:500" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/momentjs/2.13.0/moment.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
 
   <style>
-    /* CSS goes here */
+    body{
+     font-family: 'Ubuntu', sans-serif;
+   }
+
+table {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  width: 80%;
+  text-align: center;
+  padding: 2px
+
+}
+
+td {
+  border: 3px solid black;
+  text-align: center;
+}
+
+button {
+  font-family: 'Monda', sans-serif;
+}
+
+
   </style>
 </head>
 
 <body>
 
-  <nav>
-    TRAIN TIME - Time for Trains
+
+  <nav class="navbar navbar-light bg-info ">
+    <span class="text-light mb-0 h1">When Will My Train Arrive?</span>
   </nav>
 
-  <hr>
-
-  <table>
-    <tbody id="train-table">
-      <tr>
-        <th>Train Name</th>
-        <th>Destination</th>
-        <th>Next Arrival</th>
-        <th>Frequency</th>
-        <th>Minutes Away</th>
-      </tr>
-    </tbody>
-  </table>
 
   <hr>
 
-  <div>
-    <form>
-      <label for="train-name">Name That Train!</label><br>
-      <input type="text" id="train-name">
-      <br>
-      <label for="destination">Destination</label><br>
-      <input type="text" id="destination">
-      <br>
-      <br>
-      <div id="arrival-time-div">
-      </div>
-      <!-- <label for="first-time-24">Arrival Time</label><br>
-      <input type="number" id="first-time-24" min="0" max="2400"> -->
-      <br>
-      <label for="frequency-minutes">Frequency</label><br>
-      <input type="number" id="frequency-minutes" min="0">
-      <br>
-      <button id="submit">Submit</button>
-    </form>
+  <div class="card bg-light" style="width: 70%;">
+    <div class="card-body ">
+      <h5 class="card-title">Train Time Table</h5>
+      <h6 class="card-subtitle mb-2 text-muted">Times are displayed in 24hr format.</h6>
+
+      <table>
+        <tbody id="train-table">
+          <th>Train Name</th>
+          <th>Destination</th>
+          <th>Next Arrival</th>
+          <th>Frequency(minutes)</th>
+          <th>Minutes Away</th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 
+
+
+  <hr>
+  <div class="card bg-secondary" style="width: 50%;">
+    <div class="card-body ">
+      <h5 class="card-title">Add a Train!</h5>
+      <h6 class="card-subtitle mb-2 text-muted">Times are displayed in 24hr format.</h6>
+
+      <form>
+        <div class="form-group">
+          <label for="train-name">Name That Train!</label><br>
+          <input type="text" id="train-name">
+          <br>
+          <br>
+          <label for="destination">Where's it headed?</label><br>
+          <input type="text" id="destination">
+          <br>
+          <br>
+          <div>Arrival Time in 24hr Format</div>
+          <div id="arrival-time-div">
+          </div>
+          <!-- <label for="first-time-24">Arrival Time</label><br>
+      <input type="number" id="first-time-24" min="0" max="2400"> -->
+          <br>
+          <br>
+          <label for="frequency-minutes">How Often Does it run?</label><br>
+          <input type="number" id="frequency-minutes" min="0">
+          <br>
+          <br>
+          <br>
+          <button id="submit">Submit</button>
+
+        </div>
+      </form>
+
+    </div>
+  </div>
 
   <script>
     // Initialize Firebase
@@ -87,14 +133,15 @@
     for (var i = 0; i < 24; i++) {
       hourSelect.append("<option id=" + [i] + "'>" + [i] + "</option>")
     }
-    $("#arrival-time-div").append("<label>Hours(24)</label>")
-    $("#arrival-time-div").append(hourSelect)
+    $("#arrival-time-div").append("<label>Hour  </label>").append("<br>")
+    $("#arrival-time-div").append(hourSelect).append("<br>")
 
     var minuteSelect = $("<select id='arriveMinute' name='minuteSelect'>")
     for (var i = 0; i < 59; i++) {
       minuteSelect.append("<option value='" + [i] + "'>" + [i] + "</option>")
     }
-    $("#arrival-time-div").append("<label>Minutes</label>");
+
+    $("#arrival-time-div").append("<label>Minute  </label>").append("<br>");
     $("#arrival-time-div").append(minuteSelect)
 
 
@@ -191,24 +238,30 @@
 
 
       var nextArrival = currentAbsoluteMinute + timeDiff
-      var nextDay =  Math.floor(nextArrival / 1440)
+      var nextDay = Math.floor(nextArrival / 1440)
       var nextHour = Math.floor((nextArrival - nextDay * 1440) / 60);
       var nextMinute = nextArrival % 60
 
+      if (nextHour < 10){
+        nextHour = "0"+nextHour
+      }
+      
+      if (nextMinute < 10){
+        nextMinute = "0"+nextMinute
+      }
+
+
       var nextTrain = nextHour + ":" + nextMinute
+      var minutesAway = timeDiff
 
       if (nextDay === 1) {
-       var nextTrain = "Tomorrow at " + nextHour + ":" + nextMinute;
-      }
-      else if (nextDay > 2){
-        var nextTrain ="In " + nextDay + " days at " + nextHour + ":" + nextMinute;
-      }
-      else {
+        var nextTrain = "Tomorrow at " + nextHour + ":" + nextMinute;
 
       }
-    
+      if (nextDay > 1) {
+        var nextTrain = "In " + nextDay + " days at " + nextHour + ":" + nextMinute;
+      }
 
-      var minutesAway = timeDiff
 
       //create a new row with all the datums
       var newRow = $("<tr>").append(
