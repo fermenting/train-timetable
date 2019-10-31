@@ -20,29 +20,25 @@ make it look better on mobile & desktop -->
   <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
 
   <style>
-    body{
-     font-family: 'Ubuntu', sans-serif;
-   }
+    body {
+      font-family: 'Ubuntu', sans-serif; }
 
-table {
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px;
-  width: 80%;
-  text-align: center;
-  padding: 2px
+    table {
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      width: 80%;
+      text-align: center;
+      padding: 2px
+    }
 
-}
+    td {
+      border: 3px solid black;
+      text-align: center;
+    }
 
-td {
-  border: 3px solid black;
-  text-align: center;
-}
-
-button {
-  font-family: 'Monda', sans-serif;
-}
-
-
+    button {
+      font-family: 'Monda', sans-serif;
+    }
   </style>
 </head>
 
@@ -196,11 +192,6 @@ button {
       var kidMinute = pix.val().arriveMinute
       var kidFrequency = pix.val().frequency;
 
-      // console.log(kidName);
-      // console.log(kidDestination);
-      // console.log(kidTime)
-      // console.log(kidFrequency)
-
       //next train arrives at [time] (relative to current time)
       //both times in 24hr format 
 
@@ -244,26 +235,22 @@ button {
       var nextHour = Math.floor((nextArrival - nextDay * 1440) / 60);
       var nextMinute = nextArrival % 60
 
-      if (nextHour < 10){
-        nextHour = "0"+nextHour
+      if (nextHour < 10) {
+        nextHour = "0" + nextHour
       }
-      
-      if (nextMinute < 10){
-        nextMinute = "0"+nextMinute
+      if (nextMinute < 10) {
+        nextMinute = "0" + nextMinute
       }
-
 
       var nextTrain = nextHour + ":" + nextMinute
       var minutesAway = timeDiff
 
       if (nextDay === 1) {
         var nextTrain = "Tomorrow at " + nextHour + ":" + nextMinute;
-
       }
       if (nextDay > 1) {
         var nextTrain = "In " + nextDay + " days at " + nextHour + ":" + nextMinute;
       }
-
 
       //create a new row with all the datums
       var newRow = $("<tr>").append(
@@ -278,24 +265,8 @@ button {
 
       //end of childadded function
     })
-
-
-
   </script>
-
-
-
-
 
 </body>
 
 </html>
-<!-- 
-var a = new Date('01/12/2016'); //December 1 2016 in DD/MM/YYYY format
-// //"Tue Jan 12 2016 00:00:00 GMT-0600 (Central Standard Time)"
-
-// moment('01/12/2016', 'DD/MM/YYYY', true).format()
-// "2016-12-01T00:00:00-06:00"
-
-// moment().add(3, 'hours');
- -->
